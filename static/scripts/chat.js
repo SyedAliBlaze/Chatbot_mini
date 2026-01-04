@@ -22,140 +22,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getTime() {
         let now = new Date();
-        let hours = now.getHours();
-        let minutes = now.getMinutes();
+        let hours = now.getHours().toString().padStart(2, '0');
+        let minutes = now.getMinutes().toString().padStart(2, '0');
         let timeString = hours + ":" + minutes;
         return '<span class="time">' + timeString + '</span>';
     }
 
-    // Global variable to store uid
-    let uid = 0;
-
     function getResponseFromBackend(userText) {
+        if (!userText.trim()) {
+            getBotResponse("Please type or say something!");
+            return;
+        }
         $.ajax({
             type: "POST",
             url: "/get-response",
-            data: {
-                userInput: userText,
-                uid: uid
-            },
+            data: { userInput: userText },
             success: function (response) {
-                let botResponse = response.botResponse;
+                let botResponse = response.botResponse || "Sorry, I didn't get that.";
                 getBotResponse(botResponse);
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX error:", status, error);
+                getBotResponse("Sorry, something went wrong. Please try again.");
             }
         });
-    }
-
-    function getloginFromBackend(username, password) {
-        $.ajax({
-            type: "POST",
-            url: "/get-response-login",
-            data: {
-                username: username,
-                password: password
-            },
-            success: function (response) {
-                let botResponse = response.botResponse;
-                let userId = response.userId;
-                setUid(userId);
-                getBotResponse(botResponse);
-            }
-        });
-    }
-
-    function processFeedback(feedback) {
-        $.ajax({
-            type: "POST",
-            url: "/submit-feedback",
-            data: {
-                feedback: feedback
-            },
-            success: function (response) {
-                let botResponse = response.botResponse;
-                getBotResponse(botResponse);
-            }
-        });
-    }
-
-    function getuserFromBackend() {
-        $.ajax({
-            type: "POST",
-            url: "/get-response-user",
-            data: {
-                uid: uid
-            },
-            success: function (response) {
-                let botResponse = response.botResponse;
-                getBotResponse(botResponse);
-            }
-        });
-    }
-
-    function setUid(newUid) {
-        uid = newUid;
     }
 
     function getResponse() {
-        let userText = $("#textInput").val();
-        let utext = userText;
+        let userText = $("#textInput").val().trim();
+        if (!userText) {
+            getBotResponse("Please type something!");
+            return;
+        }
         let time = getTime();
-        let userHtml = time;
-        userHtml += '<p class="userText"><span>' + userText + '</span></p>';
+        let userHtml = time + '<p class="userText"><span>' + userText + '</span></p>';
         $("#textInput").val("");
         $("#chatbox").append(userHtml);
-        document.getElementById("chat-bar-bottom").scrollIntoView(true);
+        document.getElementById("chat-bar-bottom").scrollIntoView({ behavior: 'smooth' });
+        console.log("Send button clicked, input:", userText);
 
-        if (utext.startsWith("/login")) {
-            let inputs = userText.split(" ");
-            let username = inputs[1];
-            let password = inputs[2];
-            getloginFromBackend(username, password);
-        } else if (utext.startsWith("/feedback")) {
-            let feedback = utext.substring("/feedback".length).trim();
-            processFeedback(feedback);
-        } else if (utext === "/userinfo") {
-            let botHtml = '<p class="botText"><span>' + uid + '</span></p>';
-            $("#chatbox").append(botHtml);
-            document.getElementById("chat-bar-bottom").scrollIntoView(true);
-        } else if (utext === "/logout") {
-            setUid(0);
-            let botResponse = "You have been logged out.";
-            let botHtml = '<p class="botText"><span>' + botResponse + '</span></p>';
-            $("#chatbox").append(botHtml);
-            document.getElementById("chat-bar-bottom").scrollIntoView(true);
-        } else {
-            setTimeout(function () {
-                getResponseFromBackend(userText);
-            }, 1000);
-        }
+        setTimeout(function () {
+            getResponseFromBackend(userText);
+        }, 1000);
     }
 
     function getBotResponse(botResponse) {
         let botHtml = '<p class="botText"><span>' + botResponse + '</span></p>';
         $("#chatbox").append(botHtml);
-        document.getElementById("chat-bar-bottom").scrollIntoView(true);
-    }
-
-    function buttonSendText(sampleText) {
-        let userHtml = '<p class="userText"><span>' + sampleText + '</span></p>';
-        $("#textInput").val("");
-        $("#chatbox").append(userHtml);
-        document.getElementById("chat-bar-bottom").scrollIntoView(true);
+        document.getElementById("chat-bar-bottom").scrollIntoView({ behavior: 'smooth' });
     }
 
     function sendButton() {
         getResponse();
     }
-
-    $(document).ready(function () {
-        firstBotMessage();
-    });
-
-    $("#textInput").keypress(function (e) {
-        if (e.which == 13) {
-            getResponse();
-        }
-    });
 
     function startRecording() {
         var recognition = new webkitSpeechRecognition();
@@ -167,9 +86,76 @@ document.addEventListener("DOMContentLoaded", function () {
             let time = getTime();
             let userHtml = time + '<p class="userText"><span>' + transcript + '</span></p>';
             $("#chatbox").append(userHtml);
-            document.getElementById("chat-bar-bottom").scrollIntoView(true);
+            document.getElementById("chat-bar-bottom").scrollIntoView({ behavior: 'smooth' });
             getResponseFromBackend(transcript);
         };
         recognition.start();
     }
+
+    $(document).ready(function () {
+        firstBotMessage();
+        $("#sendButton").off('click').on('click', function () {
+            sendButton();
+        });
+        $("#voiceButton").off('click').on('click', function () {
+            startRecording();
+        });
+    });
+
+    $("#textInput").off('keypress').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            sendButton();
+        }
+    });
+
+    let lastDateDigits = [];
+    let lastTimeDigits = [];
+
+    function updateHomeFlipClockAndDate() {
+        const now = new Date();
+        const y = now.getFullYear().toString();
+        const m = (now.getMonth() + 1).toString().padStart(2, '0');
+        const d = now.getDate().toString().padStart(2, '0');
+        const dateDigits = [...y, ...m, ...d];
+        const h = now.getHours().toString().padStart(2, '0');
+        const min = now.getMinutes().toString().padStart(2, '0');
+        const s = now.getSeconds().toString().padStart(2, '0');
+        const timeDigits = [...h, ...min, ...s];
+
+        const dateIds = [
+            'date-y1', 'date-y2', 'date-y3', 'date-y4',
+            'date-m1', 'date-m2', 'date-d1', 'date-d2'
+        ];
+        const timeIds = [
+            'time-h1', 'time-h2', 'time-m1', 'time-m2', 'time-s1', 'time-s2'
+        ];
+
+        dateIds.forEach((id, i) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (lastDateDigits[i] !== dateDigits[i]) {
+                el.textContent = dateDigits[i];
+                el.classList.remove('flip-animate');
+                void el.offsetWidth;
+                el.classList.add('flip-animate');
+            }
+        });
+        lastDateDigits = dateDigits;
+
+        timeIds.forEach((id, i) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (lastTimeDigits[i] !== timeDigits[i]) {
+                el.textContent = timeDigits[i];
+                el.classList.remove('flip-animate');
+                void el.offsetWidth;
+                el.classList.add('flip-animate');
+            }
+        });
+        lastTimeDigits = timeDigits;
+    }
+
+    setInterval(updateHomeFlipClockAndDate, 1000);
+    updateHomeFlipClockAndDate();
 });

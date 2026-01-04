@@ -11,6 +11,44 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
+    <!-- Flip Clock & Date on Home Screen -->
+    <div class="flip-container home-flip">
+        <div class="flip-item" id="home-flip-date">
+            <span class="flip-group">
+                <span class="flip-panel" id="date-y1"></span>
+                <span class="flip-panel" id="date-y2"></span>
+                <span class="flip-panel" id="date-y3"></span>
+                <span class="flip-panel" id="date-y4"></span>
+            </span>
+            <span class="flip-sep">/</span>
+            <span class="flip-group">
+                <span class="flip-panel" id="date-m1"></span>
+                <span class="flip-panel" id="date-m2"></span>
+            </span>
+            <span class="flip-sep">/</span>
+            <span class="flip-group">
+                <span class="flip-panel" id="date-d1"></span>
+                <span class="flip-panel" id="date-d2"></span>
+            </span>
+        </div>
+        <div class="flip-item" id="home-flip-clock">
+            <span class="flip-group">
+                <span class="flip-panel" id="time-h1"></span>
+                <span class="flip-panel" id="time-h2"></span>
+            </span>
+            <span class="flip-sep">:</span>
+            <span class="flip-group">
+                <span class="flip-panel" id="time-m1"></span>
+                <span class="flip-panel" id="time-m2"></span>
+            </span>
+            <span class="flip-sep">:</span>
+            <span class="flip-group">
+                <span class="flip-panel" id="time-s1"></span>
+                <span class="flip-panel" id="time-s2"></span>
+            </span>
+        </div>
+    </div>
+
     <!-- CHAT BAR BLOCK -->
     <div class="chat-bar-collapsible">
         <button id="chat-button" type="button" class="collapsible">Chat with us!
@@ -36,11 +74,11 @@
                             </div>
 
                             <div class="chat-bar-icons">
-                                 <!-- Send message icon -->
+                                <!-- Send message icon -->
                                 <i id="send-icon" style="color: #333;" class="fa fa-fw fa-send" onclick="sendButton()"></i>
                                 <!-- Microphone icon for voice input -->
                                 <i id="voiceInputButton" class="fa fa-fw fa-microphone" onclick="startRecording()"></i>
-</div>
+                            </div>
                         </div>
 
                         <div id="chat-bar-bottom">
@@ -53,6 +91,10 @@
             </div>
         </div>
     </div>
+
+    <footer style="text-align:center; color:#888; margin: 30px 0 10px 0; font-size: 1em;">
+        © 2025 ChatBot from SyedAliBlaze&Co.
+    </footer>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='scripts/chat.js') }}"></script>
