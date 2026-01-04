@@ -73,52 +73,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function sendButton() {
-        console.log("Send button triggered");
         getResponse();
     }
 
     function startRecording() {
-        console.log("Voice button triggered");
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            getBotResponse("Sorry, your browser doesn't support speech recognition.");
-            return;
-        }
-
-        const recognition = new SpeechRecognition();
+        var recognition = new webkitSpeechRecognition();
         recognition.lang = 'en-US';
         recognition.continuous = false;
         recognition.interimResults = false;
-
         recognition.onresult = function (event) {
-            const transcript = event.results[0][0].transcript;
+            var transcript = event.results[0][0].transcript;
             let time = getTime();
             let userHtml = time + '<p class="userText"><span>' + transcript + '</span></p>';
             $("#chatbox").append(userHtml);
             document.getElementById("chat-bar-bottom").scrollIntoView({ behavior: 'smooth' });
-            console.log("Speech recognized:", transcript);
             getResponseFromBackend(transcript);
         };
-
-        recognition.onerror = function (event) {
-            console.error("Speech recognition error:", event.error);
-            let errorMessage = "Sorry, I couldn't understand you. ";
-            if (event.error === "no-speech") {
-                errorMessage += "No speech detected.";
-            } else if (event.error === "audio-capture") {
-                errorMessage += "No microphone found.";
-            } else if (event.error === "not-allowed") {
-                errorMessage += "Microphone access denied.";
-            } else {
-                errorMessage += "Please try again.";
-            }
-            getBotResponse(errorMessage);
-        };
-
-        recognition.onend = function () {
-            console.log("Speech recognition ended");
-        };
-
         recognition.start();
     }
 
